@@ -1,6 +1,6 @@
 import easygui
 import sys
-import urllib.request
+import urllib
 
 mode = 0
 size = 0
@@ -18,6 +18,7 @@ def setMode(arg):
 	mode = arg
 
 def setParams(arg):
+	global paramsList
 	paramsList = arg
 
 def configureURL(stockSymbol, startDateVals, endDateVals):
@@ -36,12 +37,14 @@ def parseArgs():
 		elif str(sys.argv[i]).lower() == "-params": setParams(str(sys.argv[i+1]).split(';'))
 
 def parseDSBlock():
-	fieldValues = []*3
+	fieldValues = [None]*3
 	global paramsList
-	for i in range(paramsList):
-		if paramsList[i] == "stockSymbol": fieldValues[0] = paramsList[i+1]
-		elif paramsList[i] == "startDate": fieldValues[1] = paramsList[i+1]
-		elif paramsList[i] == "endDate": fieldValues[2] = paramsList[i+1]
+	
+	for i in range(len(paramsList)):
+		splitVals = paramsList[i].split('=')
+		if splitVals[0] == "stockSymbol": fieldValues[0] = splitVals[1]
+		elif splitVals[0] == "startDate": fieldValues[1] = splitVals[1]
+		elif splitVals[0] == "endDate": fieldValues[2] = splitVals[1]
 	
 	return fieldValues
 		
@@ -64,9 +67,9 @@ def sendDataBlock(fieldValues):
 	
 	print ("beginData")
 	
-	with urllib.request.urlopen(url) as f:
-		for line in f:
-			print (line)
+	f = urllib.urlopen(url)
+	for line in f:
+		print (line.strip())
 	
 	print("endData")
 	
@@ -91,7 +94,6 @@ def preview(fieldValues):
 		
 	sendDSBlock(fieldValues)
 	sendDataBlock(fieldValues)
-	
 
 def refresh():
 	fieldValues = parseDSBlock()
@@ -107,11 +109,8 @@ def main():
 	
 	parseArgs()
 	
-	print (mode)
-	
 	if mode == Mode.PREVIEW: preview(fieldValues)	
-	elif mode == Mode.EDIT: edit()
-	else: refresh()
+	elif mode == Mode.EDIT or mode == Mode.REFRESH: refresh()
 
 main()
 		

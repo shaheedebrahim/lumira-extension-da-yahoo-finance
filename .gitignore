@@ -1,0 +1,5 @@
+*.spec
+easygui*
+__init__.py
+__pycache__
+
